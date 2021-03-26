@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake</title>
+    <style>
+        body {
+            background: red
+        }
+
+        canvas {
+            background: white;
+        }
+
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div width="600">
+    <canvas width="500" height="500"></canvas>
+    <h2 id="A"></h2>
+    <script>
+        const canvas = document.querySelector("canvas");
+        const ctx = canvas.getContext("2d");
+
+
+        const snakeSize = 50;
+        const gameSpeed = 200;
+
+        let score = 0;
+        let XPos = 0;
+        let YPos = 0;
+        let way = 1;
+        let tail = [{x: XPos, y: YPos}];
+        const rectanglesInRow = canvas.width / snakeSize;
+        const rectanglesInColumn = canvas.height / snakeSize;
+
+
+        document.getElementById("A").innerText = score.toString();
+
+        let foodX;
+        let foodY;
+        randomFood();
+
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.height, canvas.width);
+
+        ctx.fillStyle = ("black");
+        ctx.fillRect(XPos, YPos, snakeSize, snakeSize);
+        document.onkeydown = checkKey;
+
+        gameLoop()
+
+        function gameLoop() {
+            move();
+            draw();
+            setTimeout(gameLoop, gameSpeed);
+        }
+
+        function randomFood() {
+            foodX = Math.floor(Math.random() * rectanglesInRow) * snakeSize;
+            foodY = Math.floor(Math.random() * rectanglesInColumn) * snakeSize;
+        }
+
+        function checkKey(e) {
+
+            e = e || window.event;
+
+            if (e.keyCode == '38') {
+                // up arrow
+                if (way != 2) {
+                    way = 1;
+                }
+            } else if (e.keyCode == '40') {
+                // down arrow
+                if (way != 1) {
+                    way = 2;
+                }
+            } else if (e.keyCode == '37') {
+                // left arrow
+                if (way != 4) {
+                    way = 3;
+                }
+            } else if (e.keyCode == '39') {
+                // right arrow
+                if (way != 3) {
+                    way = 4;
+                }
+            }
+        }
+
+        function move() {
+            if (way == 1) {
+                YPos -= snakeSize;
+            } else if (way == 2) {
+                YPos += snakeSize;
+            } else if (way == 3) {
+                XPos -= snakeSize;
+            } else if (way == 4) {
+                XPos += snakeSize;
+            }
+            checkCollision();
+
+            tail.push({x: XPos, y: YPos});
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+            drawGrid();
+
+            drawTail();
+
+            //Snake rectangle
+            rectangle("black", XPos, YPos, snakeSize, snakeSize);
+            //Food rectangle
+            rectangle("blue", foodX, foodY, snakeSize-2, snakeSize-2);
+
+        }
+
+        function drawTail() {
+            tail = tail.slice(-1 * (score + 1));
+            for (let i = 0; i < tail.length; i++) {
+                rectangle("grey", tail[i].x, tail[i].y, snakeSize-2, snakeSize-2)
+            }
+
+        }
+
+        function drawGrid() {
+            for (let i = 0; i < rectanglesInRow; i++) {
+                for (let j = 0; j < rectanglesInColumn; j++) {
+                    rectangle("yellow", snakeSize * i, snakeSize * j, snakeSize - 2, snakeSize - 2);
+                }
+                rectangle("yellow", snakeSize * i, 0, snakeSize - 2, snakeSize - 2);
+            }
+        }
+
+        function rectangle(color, x, y, width, height) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        function checkCollision() {
+            // Collision with window boundaries
+            if (XPos < 0) {
+                XPos = canvas.width - snakeSize;
+            } else if (XPos > canvas.width - snakeSize) {
+                XPos = 0;
+            } else if (YPos < 0) {
+                YPos = canvas.height - snakeSize;
+            } else if (YPos > canvas.height - snakeSize) {
+                YPos = 0;
+            }
+
+            foodCollision()
+
+            tailCollision()
+        }
+
+        function foodCollision() {
+            if (foodX == XPos && foodY == YPos) {
+                randomFood();
+                addScore();
+            }
+        }
+
+        function tailCollision() {
+            tail.forEach((item) => {
+                if (item.x == XPos && item.y == YPos) {
+                    alert("gameover");
+                    resetGame();
+                }
+            })
+        }
+
+        function addScore() {
+            score++;
+            document.getElementById("A").innerText = score.toString();
+        }
+
+        function resetGame()
+        {
+       location.reload();
+        }
+    </script>
+</div>
+</body>
+</html>
